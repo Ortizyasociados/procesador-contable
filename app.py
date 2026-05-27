@@ -35,8 +35,7 @@ if uploaded_files:
                 if nombre_xml.endswith('.xml'):
                     contenido = z.read(nombre_xml).decode('utf-8')
                     if '<Invoice' in contenido:
-                        xml_text = contenido[contenido.find('<Invoice'):contenido.rfind('</Invoice>')+10]
-                        root = ET.fromstring(xml_text)
+                        root = ET.fromstring(contenido[contenido.find('<Invoice'):contenido.rfind('</Invoice>')+10])
                     else:
                         root = ET.fromstring(contenido)
                     
@@ -46,11 +45,17 @@ if uploaded_files:
                             data_avisos.append({"Tipo_Alerta": "Duplicado", "Archivo": nombre_xml, "Mensaje": f"Duplicado: {numero}"})
                         else:
                             descripciones = [d.text for d in root.findall('.//cac:InvoiceLine/cac:Item/cbc:Description', ns) if d.text]
-                            # Orden original: Descripción antes de los valores numéricos
+                            # TODAS LAS COLUMNAS DE TU CÓDIGO ORIGINAL
                             item = {
                                 "Numero": numero,
                                 "Fecha": obtener_valor(root, './/cbc:IssueDate'),
                                 "Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cbc:RegistrationName'),
+                                "NIT_Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cbc:CompanyID'),
+                                "Direccion_Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cac:Party//cac:PhysicalLocation//cac:Address//cac:AddressLine//cbc:Line'),
+                                "Cliente": obtener_valor(root, './/cac:AccountingCustomerParty//cbc:RegistrationName'),
+                                "NIT_Cliente": obtener_valor(root, './/cac:AccountingCustomerParty//cbc:CompanyID'),
+                                "Email_Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cac:Party//cac:Contact//cbc:ElectronicMail'),
+                                "Telefono": obtener_telefono(root),
                                 "Descripcion": " - ".join(descripciones) if descripciones else "Sin descripción",
                                 "Base_Imp": float(obtener_valor(root, './/cac:LegalMonetaryTotal/cbc:LineExtensionAmount')),
                                 "IVA": float(obtener_valor(root, './/cac:TaxTotal/cbc:TaxAmount')),
@@ -62,15 +67,23 @@ if uploaded_files:
                         data_avisos.append({"Tipo_Alerta": "Revisión", "Archivo": nombre_xml, "Mensaje": "Revisar estructura"})
 
     df = pd.DataFrame(data_facturas)
+    
+    # 1. Mostrar toda la tabla sin ocultar columnas
+    st.subheader("Datos procesados")
     st.dataframe(df, use_container_width=True)
     
-    # Métricas solicitadas (solo Base y IVA)
+    # 2. Totales visibles en pantalla
     if not df.empty:
         col1, col2 = st.columns(2)
         col1.metric("Total Base Imponible", f"{df['Base_Imp'].sum():,.2f}")
         col2.metric("Total IVA", f"{df['IVA'].sum():,.2f}")
+    
+    # 3. Mostrar la tabla de errores en la misma pantalla de Streamlit
+    if data_avisos:
+        st.subheader("Archivos para revisión manual")
+        st.dataframe(pd.DataFrame(data_avisos), use_container_width=True)
 
-    # Descarga con el formato original (Avisos 3 líneas abajo)
+    # 4. Descarga Excel manteniendo tu formato original
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Reporte')
