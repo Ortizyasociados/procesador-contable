@@ -36,10 +36,10 @@ def obtener_telefono(root):
         tel = obtener_valor(root, './/cac:AccountingCustomerParty//cac:Contact//cbc:Telephone')
     return tel
 
-# Área de subida con diseño mejorado
-with st.container():
-    st.info("📂 Por favor, cargue los archivos ZIP comprimidos para iniciar el procesamiento contable.")
-    uploaded_files = st.file_uploader("", type=["zip"], accept_multiple_files=True)
+# Área de subida con diseño limpio y tipografía estándar
+st.markdown("---")
+st.markdown("##### Por favor, cargue los archivos ZIP comprimidos para iniciar el procesamiento contable.")
+uploaded_files = st.file_uploader("📂 Seleccione sus archivos ZIP", type=["zip"], accept_multiple_files=True)
 
 if uploaded_files:
     data_facturas = []
