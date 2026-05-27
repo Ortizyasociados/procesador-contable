@@ -41,11 +41,8 @@ if uploaded_files:
                     
                     numero = obtener_valor(root, './/cbc:ID')
                     fecha_emision = obtener_valor(root, './/cbc:IssueDate')
-                    
-                    # Lógica para fechas y tipo de pago
                     fecha_vencimiento = obtener_valor(root, './/cbc:DueDate')
-                    if fecha_vencimiento == "0":
-                        fecha_vencimiento = obtener_valor(root, './/cbc:PaymentDueDate')
+                    if fecha_vencimiento == "0": fecha_vencimiento = obtener_valor(root, './/cbc:PaymentDueDate')
                     tipo_pago = "CRÉDITO" if (fecha_vencimiento != "0" and fecha_vencimiento != fecha_emision) else "CONTADO"
 
                     if numero != "0" and root.find('.//cac:InvoiceLine', ns) is not None:
@@ -53,9 +50,9 @@ if uploaded_files:
                             data_avisos.append({"Tipo_Alerta": "Duplicado", "Archivo": nombre_xml, "Mensaje": f"Duplicado: {numero}"})
                         else:
                             descripciones = [d.text for d in root.findall('.//cac:InvoiceLine/cac:Item/cbc:Description', ns) if d.text]
-                            
-                            # Diccionario con las columnas tal cual las pediste
+                            # Diccionario incluyendo la columna "Item" como la primera
                             item = {
+                                "Item": 0,
                                 "Numero": numero,
                                 "Fecha": fecha_emision,
                                 "Fecha_Vencimiento": fecha_vencimiento,
@@ -78,33 +75,30 @@ if uploaded_files:
                         data_avisos.append({"Tipo_Alerta": "Revisión", "Archivo": nombre_xml, "Mensaje": "Revisar estructura"})
 
     df = pd.DataFrame(data_facturas)
+    # Lógica para numerar los ítems
+    if not df.empty:
+        df['Item'] = range(1, len(df) + 1)
+    
     st.dataframe(df, use_container_width=True)
     
-    # Totales en pantalla
     if not df.empty:
         col1, col2 = st.columns(2)
         col1.metric("Total Base Imponible", f"{df['Base_Imp'].sum():,.2f}")
         col2.metric("Total IVA", f"{df['IVA'].sum():,.2f}")
     
-    if data_avisos:
-        st.subheader("Archivos para revisión manual")
-        st.dataframe(pd.DataFrame(data_avisos), use_container_width=True)
-
-    # Excel con totales escritos en las celdas
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Reporte')
         worksheet = writer.sheets['Reporte']
         
-        # Escribir totales abajo
         if not df.empty:
             totales_fila = len(df) + 1
             worksheet.write(totales_fila, 0, "Total")
-            worksheet.write(totales_fila, 12, df['Base_Imp'].sum())
-            worksheet.write(totales_fila, 13, df['IVA'].sum())
-            worksheet.write(totales_fila, 14, df['Total'].sum())
+            # Ajustado para que los totales caigan en las columnas correctas ahora que añadimos 'Item'
+            worksheet.write(totales_fila, 13, df['Base_Imp'].sum())
+            worksheet.write(totales_fila, 14, df['IVA'].sum())
+            worksheet.write(totales_fila, 15, df['Total'].sum())
         
-        # Escribir Avisos
         if data_avisos:
             fila_avisos = len(df) + 4
             pd.DataFrame(data_avisos).to_excel(writer, index=False, sheet_name='Reporte', startrow=fila_avisos)
