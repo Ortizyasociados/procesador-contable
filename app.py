@@ -4,6 +4,9 @@ import zipfile
 import io
 import xml.etree.ElementTree as ET
 
+# Configuración de visualización para pantalla completa
+st.set_page_config(layout="wide")
+
 ns = {
     'cac': 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2',
     'cbc': 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2'
@@ -15,17 +18,19 @@ def obtener_valor(elemento, ruta, index=0):
 
 st.title("Procesador de Facturas XML")
 
-# Aquí permitimos múltiples archivos
+# Modificación técnica: permitir múltiples archivos
 uploaded_files = st.file_uploader("Sube tus archivos ZIP", type=["zip"], accept_multiple_files=True)
 
 if uploaded_files:
     data_facturas = []
     
+    # Bucle para mantener tu lógica original pero iterando sobre los archivos
     for uploaded_file in uploaded_files:
         with zipfile.ZipFile(uploaded_file) as z:
             for nombre_xml in z.namelist():
                 if nombre_xml.endswith('.xml'):
                     contenido = z.read(nombre_xml).decode('utf-8')
+                    # TU CÓDIGO ORIGINAL SIN CAMBIOS:
                     root = ET.fromstring(contenido if '<Invoice' not in contenido else contenido[contenido.find('<Invoice'):contenido.rfind('</Invoice>')+10])
                     item = {
                         "Numero": obtener_valor(root, './/cbc:ID'),
@@ -36,7 +41,7 @@ if uploaded_files:
     
     df = pd.DataFrame(data_facturas)
     
-    # Visualización corregida para que ocupe todo el ancho
+    # Visualización configurada para pantalla completa
     st.dataframe(df, use_container_width=True)
     
     output = io.BytesIO()
