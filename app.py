@@ -17,7 +17,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Título y Branding
-st.title("🏛️ Ortizia Asociados")
+st.title("🏛️ Ortiz y Asociados")
 st.subheader("Procesador Inteligente de Facturas Electrónicas XML")
 st.markdown("---")
 
