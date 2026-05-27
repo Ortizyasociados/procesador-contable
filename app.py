@@ -50,7 +50,6 @@ if uploaded_files:
                             data_avisos.append({"Tipo_Alerta": "Duplicado", "Archivo": nombre_xml, "Mensaje": f"Duplicado: {numero}"})
                         else:
                             descripciones = [d.text for d in root.findall('.//cac:InvoiceLine/cac:Item/cbc:Description', ns) if d.text]
-                            # Diccionario incluyendo la columna "Item" como la primera
                             item = {
                                 "Item": 0,
                                 "Numero": numero,
@@ -75,16 +74,21 @@ if uploaded_files:
                         data_avisos.append({"Tipo_Alerta": "Revisión", "Archivo": nombre_xml, "Mensaje": "Revisar estructura"})
 
     df = pd.DataFrame(data_facturas)
-    # Lógica para numerar los ítems
     if not df.empty:
         df['Item'] = range(1, len(df) + 1)
     
+    st.subheader("Datos procesados")
     st.dataframe(df, use_container_width=True)
     
     if not df.empty:
         col1, col2 = st.columns(2)
         col1.metric("Total Base Imponible", f"{df['Base_Imp'].sum():,.2f}")
         col2.metric("Total IVA", f"{df['IVA'].sum():,.2f}")
+    
+    # Esta es la sección que faltaba visualizar en pantalla
+    if data_avisos:
+        st.subheader("Archivos para revisión manual")
+        st.dataframe(pd.DataFrame(data_avisos), use_container_width=True)
     
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -94,7 +98,6 @@ if uploaded_files:
         if not df.empty:
             totales_fila = len(df) + 1
             worksheet.write(totales_fila, 0, "Total")
-            # Ajustado para que los totales caigan en las columnas correctas ahora que añadimos 'Item'
             worksheet.write(totales_fila, 13, df['Base_Imp'].sum())
             worksheet.write(totales_fila, 14, df['IVA'].sum())
             worksheet.write(totales_fila, 15, df['Total'].sum())
