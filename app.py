@@ -4,23 +4,64 @@ import zipfile
 import io
 import xml.etree.ElementTree as ET
 
-# Configuración de página con diseño ancho
-st.set_page_config(page_title="Ortiz y Asociados | Procesador", layout="wide")
+# 1. CONFIGURACIÓN DE APARIENCIA PROFESIONAL
+st.set_page_config(page_title="Ortiz y Asociados | Portal Contable", layout="wide")
 
-# Estilos personalizados para un look más profesional
+# CSS para diseño Minimalista y Moderno
 st.markdown("""
     <style>
-    .main { background-color: #f8f9fa; }
-    h1 { color: #003366; text-align: center; }
-    .stApp { border-top: 5px solid #003366; }
+    /* Estilo de la fuente y fondo */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    
+    .main { background-color: #ffffff; }
+    
+    /* Título principal elegante */
+    .empresa-header {
+        color: #1a1a1a;
+        text-align: center;
+        font-weight: 600;
+        font-size: 2.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .subtitle-header {
+        color: #666666;
+        text-align: center;
+        font-weight: 400;
+        font-size: 1.1rem;
+        margin-bottom: 40px;
+    }
+
+    /* Personalización del área de carga para que no se vea "vieja" */
+    section[data-testid="stFileUploadDropzone"] {
+        border: 2px dashed #e0e0e0 !important;
+        border-radius: 15px !important;
+        background-color: #fafafa !important;
+        padding: 40px !important;
+    }
+    
+    /* Texto de instrucción */
+    .instruccion-texto {
+        color: #333333;
+        font-size: 1rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# Título y Branding
-st.title("🏛️ Ortiz y Asociados")
-st.subheader("Procesador Inteligente de Facturas Electrónicas XML")
-st.markdown("---")
+# 2. ENCABEZADO CORPORATIVO
+st.markdown('<div class="empresa-header">🏛️ Ortiz y Asociados</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-header">Procesador Inteligente de Facturas Electrónicas XML</div>', unsafe_allow_html=True)
 
+# 3. ÁREA DE CARGA ESTÉTICA
+st.markdown('<div class="instruccion-texto">📥 <b>Por favor, cargue los archivos ZIP para iniciar el procesamiento contable:</b></div>', unsafe_allow_html=True)
+uploaded_files = st.file_uploader("", type=["zip"], accept_multiple_files=True)
+
+# --- INICIO DEL MOTOR (TU LÓGICA ORIGINAL INTACTA) ---
 ns = {
     'cac': 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2',
     'cbc': 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2'
@@ -35,23 +76,6 @@ def obtener_telefono(root):
     if tel == "0":
         tel = obtener_valor(root, './/cac:AccountingCustomerParty//cac:Contact//cbc:Telephone')
     return tel
-
-# Área de subida elegante y compacta
-st.markdown("""
-    <style>
-    .custom-upload-text {
-        color: #333333;
-        font-size: 1.1rem;
-        font-weight: 500;
-        margin-bottom: 10px;
-    }
-    </style>
-    <div class="custom-upload-text">
-        ✨ Por favor, seleccione sus archivos ZIP para iniciar el procesamiento contable:
-    </div>
-""", unsafe_allow_html=True)
-
-uploaded_files = st.file_uploader("", type=["zip"], accept_multiple_files=True, help="Sube tus archivos comprimidos aquí")
 
 if uploaded_files:
     data_facturas = []
@@ -106,7 +130,6 @@ if uploaded_files:
     if not df.empty:
         df['Item'] = range(1, len(df) + 1)
     
-    # Visualización organizada en contenedores
     st.markdown("---")
     st.subheader("📊 Resultados del Procesamiento")
     st.dataframe(df, use_container_width=True)
@@ -116,12 +139,10 @@ if uploaded_files:
         c1.metric("💰 Total Base Imponible", f"${df['Base_Imp'].sum():,.2f}")
         c2.metric("💳 Total IVA", f"${df['IVA'].sum():,.2f}")
     
-    # Avisos siempre visibles si hay algo que revisar
     if data_avisos:
         st.warning("⚠️ Archivos para revisión manual")
         st.dataframe(pd.DataFrame(data_avisos), use_container_width=True)
     
-    # Descarga final
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Reporte')
@@ -138,3 +159,4 @@ if uploaded_files:
             worksheet.write(fila_avisos - 1, 0, "ARCHIVOS PARA REVISIÓN MANUAL")
             
     st.download_button("📥 Descargar Reporte Final (Excel)", data=output.getvalue(), file_name="Reporte_Contable_Final.xlsx")
+# --- FIN DEL MOTOR ---
