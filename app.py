@@ -15,25 +15,28 @@ def obtener_valor(elemento, ruta, index=0):
 
 st.title("Procesador de Facturas XML")
 
-uploaded_file = st.file_uploader("Sube tu archivo ZIP", type=["zip"])
+# Aquí permitimos múltiples archivos
+uploaded_files = st.file_uploader("Sube tus archivos ZIP", type=["zip"], accept_multiple_files=True)
 
-if uploaded_file is not None:
+if uploaded_files:
     data_facturas = []
-    with zipfile.ZipFile(uploaded_file) as z:
-        for nombre_xml in z.namelist():
-            if nombre_xml.endswith('.xml'):
-                contenido = z.read(nombre_xml).decode('utf-8')
-                root = ET.fromstring(contenido if '<Invoice' not in contenido else contenido[contenido.find('<Invoice'):contenido.rfind('</Invoice>')+10])
-                item = {
-                    "Numero": obtener_valor(root, './/cbc:ID'),
-                    "Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cbc:RegistrationName'),
-                    "Total": float(obtener_valor(root, './/cac:LegalMonetaryTotal/cbc:PayableAmount'))
-                }
-                data_facturas.append(item)
+    
+    for uploaded_file in uploaded_files:
+        with zipfile.ZipFile(uploaded_file) as z:
+            for nombre_xml in z.namelist():
+                if nombre_xml.endswith('.xml'):
+                    contenido = z.read(nombre_xml).decode('utf-8')
+                    root = ET.fromstring(contenido if '<Invoice' not in contenido else contenido[contenido.find('<Invoice'):contenido.rfind('</Invoice>')+10])
+                    item = {
+                        "Numero": obtener_valor(root, './/cbc:ID'),
+                        "Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cbc:RegistrationName'),
+                        "Total": float(obtener_valor(root, './/cac:LegalMonetaryTotal/cbc:PayableAmount'))
+                    }
+                    data_facturas.append(item)
     
     df = pd.DataFrame(data_facturas)
     
-    # Esta es la única línea modificada para que la tabla no se oculte
+    # Visualización corregida para que ocupe todo el ancho
     st.dataframe(df, use_container_width=True)
     
     output = io.BytesIO()
