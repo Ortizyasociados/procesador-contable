@@ -4,7 +4,22 @@ import zipfile
 import io
 import xml.etree.ElementTree as ET
 
-st.set_page_config(layout="wide")
+# Configuración de página con diseño ancho
+st.set_page_config(page_title="Ortizia Asociados | Procesador", layout="wide")
+
+# Estilos personalizados para un look más profesional
+st.markdown("""
+    <style>
+    .main { background-color: #f8f9fa; }
+    h1 { color: #003366; text-align: center; }
+    .stApp { border-top: 5px solid #003366; }
+    </style>
+""", unsafe_allow_html=True)
+
+# Título y Branding
+st.title("🏛️ Ortizia Asociados")
+st.subheader("Procesador Inteligente de Facturas Electrónicas XML")
+st.markdown("---")
 
 ns = {
     'cac': 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2',
@@ -21,8 +36,10 @@ def obtener_telefono(root):
         tel = obtener_valor(root, './/cac:AccountingCustomerParty//cac:Contact//cbc:Telephone')
     return tel
 
-st.title("Procesador de Facturas XML")
-uploaded_files = st.file_uploader("Sube tus archivos ZIP", type=["zip"], accept_multiple_files=True)
+# Área de subida con diseño mejorado
+with st.container():
+    st.info("📂 Por favor, cargue los archivos ZIP comprimidos para iniciar el procesamiento contable.")
+    uploaded_files = st.file_uploader("", type=["zip"], accept_multiple_files=True)
 
 if uploaded_files:
     data_facturas = []
@@ -77,34 +94,35 @@ if uploaded_files:
     if not df.empty:
         df['Item'] = range(1, len(df) + 1)
     
-    st.subheader("Datos procesados")
+    # Visualización organizada en contenedores
+    st.markdown("---")
+    st.subheader("📊 Resultados del Procesamiento")
     st.dataframe(df, use_container_width=True)
     
     if not df.empty:
-        col1, col2 = st.columns(2)
-        col1.metric("Total Base Imponible", f"{df['Base_Imp'].sum():,.2f}")
-        col2.metric("Total IVA", f"{df['IVA'].sum():,.2f}")
+        c1, c2 = st.columns(2)
+        c1.metric("💰 Total Base Imponible", f"${df['Base_Imp'].sum():,.2f}")
+        c2.metric("💳 Total IVA", f"${df['IVA'].sum():,.2f}")
     
-    # Esta es la sección que faltaba visualizar en pantalla
+    # Avisos siempre visibles si hay algo que revisar
     if data_avisos:
-        st.subheader("Archivos para revisión manual")
+        st.warning("⚠️ Archivos para revisión manual")
         st.dataframe(pd.DataFrame(data_avisos), use_container_width=True)
     
+    # Descarga final
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Reporte')
         worksheet = writer.sheets['Reporte']
-        
         if not df.empty:
             totales_fila = len(df) + 1
             worksheet.write(totales_fila, 0, "Total")
             worksheet.write(totales_fila, 13, df['Base_Imp'].sum())
             worksheet.write(totales_fila, 14, df['IVA'].sum())
             worksheet.write(totales_fila, 15, df['Total'].sum())
-        
         if data_avisos:
             fila_avisos = len(df) + 4
             pd.DataFrame(data_avisos).to_excel(writer, index=False, sheet_name='Reporte', startrow=fila_avisos)
             worksheet.write(fila_avisos - 1, 0, "ARCHIVOS PARA REVISIÓN MANUAL")
             
-    st.download_button("Descargar Excel Final", data=output.getvalue(), file_name="Reporte_Contable_Final.xlsx")
+    st.download_button("📥 Descargar Reporte Final (Excel)", data=output.getvalue(), file_name="Reporte_Contable_Final.xlsx")
