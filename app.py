@@ -5,7 +5,7 @@ import io
 import xml.etree.ElementTree as ET
 
 # Configuración de página con diseño ancho
-st.set_page_config(page_title="Ortizia Asociados | Procesador", layout="wide")
+st.set_page_config(page_title="Ortiz y Asociados | Procesador", layout="wide")
 
 # Estilos personalizados para un look más profesional
 st.markdown("""
