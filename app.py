@@ -4,7 +4,6 @@ import zipfile
 import io
 import xml.etree.ElementTree as ET
 
-# Configuración para que la tabla use todo el ancho posible
 st.set_page_config(layout="wide")
 
 ns = {
@@ -35,7 +34,6 @@ if uploaded_files:
             for nombre_xml in z.namelist():
                 if nombre_xml.endswith('.xml'):
                     contenido = z.read(nombre_xml).decode('utf-8')
-                    # Tu lógica de parseo original
                     if '<Invoice' in contenido:
                         xml_text = contenido[contenido.find('<Invoice'):contenido.rfind('</Invoice>')+10]
                         root = ET.fromstring(xml_text)
@@ -43,26 +41,20 @@ if uploaded_files:
                         root = ET.fromstring(contenido)
                     
                     numero = obtener_valor(root, './/cbc:ID')
-                    fecha_emision = obtener_valor(root, './/cbc:IssueDate')
-                    
                     if numero != "0" and root.find('.//cac:InvoiceLine', ns) is not None:
                         if numero in numeros_procesados:
-                            data_avisos.append({"Tipo_Alerta": "Duplicado", "Archivo": nombre_xml, "Fecha": fecha_emision, "Mensaje": f"Duplicado: {numero}"})
+                            data_avisos.append({"Tipo_Alerta": "Duplicado", "Archivo": nombre_xml, "Mensaje": f"Duplicado: {numero}"})
                         else:
                             descripciones = [d.text for d in root.findall('.//cac:InvoiceLine/cac:Item/cbc:Description', ns) if d.text]
-                            fecha_venc = obtener_valor(root, './/cbc:DueDate')
-                            if fecha_venc == "0": fecha_venc = obtener_valor(root, './/cbc:PaymentDueDate')
-                            
+                            # Orden original: Descripción antes de los valores numéricos
                             item = {
                                 "Numero": numero,
-                                "Fecha": fecha_emision,
-                                "Fecha_Vencimiento": fecha_venc,
+                                "Fecha": obtener_valor(root, './/cbc:IssueDate'),
                                 "Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cbc:RegistrationName'),
-                                "NIT_Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cbc:CompanyID'),
+                                "Descripcion": " - ".join(descripciones) if descripciones else "Sin descripción",
                                 "Base_Imp": float(obtener_valor(root, './/cac:LegalMonetaryTotal/cbc:LineExtensionAmount')),
                                 "IVA": float(obtener_valor(root, './/cac:TaxTotal/cbc:TaxAmount')),
-                                "Total": float(obtener_valor(root, './/cac:LegalMonetaryTotal/cbc:PayableAmount')),
-                                "Descripcion": " - ".join(descripciones) if descripciones else "Sin descripción"
+                                "Total": float(obtener_valor(root, './/cac:LegalMonetaryTotal/cbc:PayableAmount'))
                             }
                             data_facturas.append(item)
                             numeros_procesados.add(numero)
@@ -70,27 +62,22 @@ if uploaded_files:
                         data_avisos.append({"Tipo_Alerta": "Revisión", "Archivo": nombre_xml, "Mensaje": "Revisar estructura"})
 
     df = pd.DataFrame(data_facturas)
-    
-    # 1. VISUALIZACIÓN MEJORADA
-    st.subheader("Datos procesados")
     st.dataframe(df, use_container_width=True)
     
-    # 2. TOTALES (Igual a tu lógica)
+    # Métricas solicitadas (solo Base y IVA)
     if not df.empty:
-        cols_totales = st.columns(3)
-        cols_totales[0].metric("Total Base Imp", f"{df['Base_Imp'].sum():,.2f}")
-        cols_totales[1].metric("Total IVA", f"{df['IVA'].sum():,.2f}")
-        cols_totales[2].metric("Total General", f"{df['Total'].sum():,.2f}")
+        col1, col2 = st.columns(2)
+        col1.metric("Total Base Imponible", f"{df['Base_Imp'].sum():,.2f}")
+        col2.metric("Total IVA", f"{df['IVA'].sum():,.2f}")
 
-    # 3. TABLA DE ERRORES/AVISOS
-    if data_avisos:
-        st.subheader("Archivos para revisión manual")
-        st.dataframe(pd.DataFrame(data_avisos), use_container_width=True)
-
-    # 4. DESCARGA
+    # Descarga con el formato original (Avisos 3 líneas abajo)
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Reporte')
         if data_avisos:
-            pd.DataFrame(data_avisos).to_excel(writer, index=False, sheet_name='Revision')
+            worksheet = writer.sheets['Reporte']
+            fila_avisos = len(df) + 4
+            pd.DataFrame(data_avisos).to_excel(writer, index=False, sheet_name='Reporte', startrow=fila_avisos)
+            worksheet.write(fila_avisos - 1, 0, "ARCHIVOS PARA REVISIÓN MANUAL")
+            
     st.download_button("Descargar Excel Final", data=output.getvalue(), file_name="Reporte_Contable_Final.xlsx")
