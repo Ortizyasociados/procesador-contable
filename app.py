@@ -15,26 +15,26 @@ def obtener_valor(elemento, ruta, index=0):
 
 st.title("Procesador de Facturas XML")
 
-uploaded_files = st.file_uploader("Sube tus archivos ZIP", type=["zip"], accept_multiple_files=True)
+uploaded_file = st.file_uploader("Sube tu archivo ZIP", type=["zip"])
 
-if uploaded_files:
+if uploaded_file is not None:
     data_facturas = []
-    for uploaded_file in uploaded_files:
-        with zipfile.ZipFile(uploaded_file) as z:
-            for nombre_xml in z.namelist():
-                if nombre_xml.endswith('.xml'):
-                    contenido = z.read(nombre_xml).decode('utf-8')
-                    root = ET.fromstring(contenido if '<Invoice' not in contenido else contenido[contenido.find('<Invoice'):contenido.rfind('</Invoice>')+10])
-                    item = {
-                        "Numero": obtener_valor(root, './/cbc:ID'),
-                        "Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cbc:RegistrationName'),
-                        "Total": float(obtener_valor(root, './/cac:LegalMonetaryTotal/cbc:PayableAmount'))
-                    }
-                    data_facturas.append(item)
+    with zipfile.ZipFile(uploaded_file) as z:
+        for nombre_xml in z.namelist():
+            if nombre_xml.endswith('.xml'):
+                contenido = z.read(nombre_xml).decode('utf-8')
+                root = ET.fromstring(contenido if '<Invoice' not in contenido else contenido[contenido.find('<Invoice'):contenido.rfind('</Invoice>')+10])
+                item = {
+                    "Numero": obtener_valor(root, './/cbc:ID'),
+                    "Proveedor": obtener_valor(root, './/cac:AccountingSupplierParty//cbc:RegistrationName'),
+                    "Total": float(obtener_valor(root, './/cac:LegalMonetaryTotal/cbc:PayableAmount'))
+                }
+                data_facturas.append(item)
     
     df = pd.DataFrame(data_facturas)
-    st.write("### Datos procesados:")
-    st.dataframe(df)
+    
+    # Esta es la única línea modificada para que la tabla no se oculte
+    st.dataframe(df, use_container_width=True)
     
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
