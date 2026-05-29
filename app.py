@@ -4,7 +4,7 @@ import zipfile
 import io
 from lxml import etree
 
-# 1. CONFIGURACIÓN DE APARIENCIA
+# Configuración de página
 st.set_page_config(page_title="Ortiz y Asociados | Portal Contable", layout="wide")
 
 st.markdown("""
@@ -26,15 +26,11 @@ if uploaded_files:
             for file_name in z.namelist():
                 if file_name.endswith(".xml"):
                     try:
-                        # Lectura del XML
                         content = z.read(file_name)
                         parser = etree.XMLParser(recover=True)
                         root = etree.fromstring(content, parser)
                         
-                        # --- LÓGICA QUIRÚRGICA: Solo el resumen oficial en la raíz ---
-                        # Evitamos los // que causan duplicidad
                         tax_totals = root.xpath('./*[local-name()="TaxTotal"]')
-                        
                         base_gravada = 0.0
                         total_iva = 0.0
                         otros_impuestos = 0.0
@@ -54,7 +50,6 @@ if uploaded_files:
                                 else:
                                     otros_impuestos += tax_amount
 
-                        # Extracción de totales oficiales
                         total_factura = float(root.xpath('.//*[local-name()="PayableAmount"]')[0].text)
                         base_exenta = max(0.0, total_factura - base_gravada - total_iva - otros_impuestos)
                         
@@ -72,15 +67,12 @@ if uploaded_files:
 
     if data:
         df = pd.DataFrame(data)
-        
-        # --- TOTALIZAR AL FINAL ---
         totales = df[['Base Gravada', 'Base Exenta', 'Total IVA', 'Otros Impuestos', 'Total Factura']].sum()
         df_final = pd.concat([df, pd.DataFrame([totales.rename(index=str).to_dict()])], ignore_index=True)
         df_final.loc[df_final.index[-1], 'ID Factura'] = 'TOTAL GENERAL'
 
         st.dataframe(df_final, use_container_width=True)
 
-        # Botón de descarga
         output = io.BytesIO()
         df_final.to_excel(output, index=False)
         st.download_button("📥 Descargar Reporte Final (Excel)", data=output.getvalue(), file_name="Reporte_Contable_Final.xlsx")
