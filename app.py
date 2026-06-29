@@ -1,7 +1,6 @@
 import zipfile
 import pandas as pd
 from lxml import etree
-from google.colab import files
 import os
 import shutil
 
