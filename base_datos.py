@@ -1,6 +1,7 @@
 import sqlite3
 
-def inicializar_base_datos():
+def guardar_tercero(datos):
+    # La conexión se abre y se cierra en cada llamada, esto evita bloqueos
     conn = sqlite3.connect("contabilidad.db")
     cursor = conn.cursor()
     cursor.execute('''
@@ -13,12 +14,6 @@ def inicializar_base_datos():
             Email TEXT
         )
     ''')
-    conn.commit()
-    conn.close()
-
-def guardar_tercero(datos):
-    conn = sqlite3.connect("contabilidad.db")
-    cursor = conn.cursor()
     try:
         cursor.execute('''
             INSERT OR IGNORE INTO Terceros (NIT, Razon_Social, Direccion, Ciudad, Telefono, Email)
@@ -33,6 +28,6 @@ def guardar_tercero(datos):
         ))
         conn.commit()
     except Exception as e:
-        print("Error al guardar en base de datos:", e)
+        print(f"Error: {e}")
     finally:
         conn.close()
