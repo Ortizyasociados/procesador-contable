@@ -7,12 +7,17 @@ import shutil
 
 # --- CONFIGURACIÓN DE INTERFAZ STREAMLIT ---
 st.title("Procesador de Facturas")
-uploaded = st.file_uploader("Sube tu archivo ZIP", type=["zip"])
+uploaded_files = st.file_uploader("Sube tus archivos ZIP", type=["zip"], accept_multiple_files=True)
 
-if uploaded is not None:
-    # Creamos un archivo temporal para que tu lógica lo procese
-    with open("uploaded_temp.zip", "wb") as f:
-        f.write(uploaded.getbuffer())
+if uploaded_files:
+    lista_datos = []
+    for uploaded_file in uploaded_files:
+        # Esto usa el nombre del archivo subido
+        zip_name = uploaded_file.name 
+        
+        # Guardamos el archivo temporalmente para procesarlo
+        with open(zip_name, "wb") as f:
+            f.write(uploaded_file.getbuffer())
     
     # Adaptamos la variable 'uploaded' para que sea un diccionario compatible con tu código
     # Tu código original iteraba sobre uploaded.keys(), por eso lo emulamos:
