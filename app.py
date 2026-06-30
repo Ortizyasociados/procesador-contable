@@ -6,8 +6,6 @@ import os
 import shutil
 import sqlite3
 
-# ANTES de llamar a guardar_tercero, pon esto:
-print(f"DEBUG: Intentando guardar NIT: {datos_extraidos['nit']} - Razon: {datos_extraidos['razon_social']}")
 def guardar_tercero(datos):
     # Esta línea imprimirá en la terminal exactamente cómo se llaman tus datos
     print("DEBUG: LOS DATOS RECIBIDOS SON ESTOS:", datos) 
