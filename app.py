@@ -7,6 +7,37 @@ import sqlite3
 import zipfile
 import base_datos # Solo añadí esta línea para conectar con tu archivo base_datos.py
 
+# --- CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(page_title="Ortiz y Asociados", layout="wide")
+
+# Estilos CSS modernos y minimalistas
+st.markdown("""
+    <style>
+    .stApp { background-color: #fcfcfc; }
+    h1 { color: #0f172a; font-family: 'Arial', sans-serif; }
+    .stButton>button { border-radius: 8px; border: 1px solid #0f172a; color: #0f172a; font-weight: bold; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- CABECERA ---
+st.title("📊 Ortiz y Asociados")
+st.subheader("Sistema Inteligente de Gestión Contable")
+st.markdown("---")
+
+# --- SIDEBAR (INTERFAZ INTELIGENTE) ---
+with st.sidebar:
+    st.header("Operaciones")
+    uploaded_files = st.file_uploader("Sube archivos ZIP de facturas", type=["zip"], accept_multiple_files=True)
+    st.markdown("---")
+    if st.button("Ver Terceros Registrados"):
+        try:
+            conn = sqlite3.connect("contabilidad.db")
+            df_terceros = pd.read_sql_query("SELECT * FROM Terceros", conn)
+            conn.close()
+            st.dataframe(df_terceros)
+        except Exception:
+            st.warning("No hay registros en la base de datos.")
+
 # --- CONFIGURACIÓN E INTERFAZ ---
 st.title("Procesador de Facturas")
 uploaded_files = st.file_uploader("Sube tus archivos ZIP", type=["zip"], accept_multiple_files=True)
