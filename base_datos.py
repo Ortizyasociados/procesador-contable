@@ -1,24 +1,11 @@
 import sqlite3
 
-def inicializar_db():
-    # Esto crea el archivo 'contabilidad.db' automáticamente
+def guardar_tercero(nit, razon, dir, ciu, tel, mail):
     conn = sqlite3.connect("contabilidad.db")
     cursor = conn.cursor()
-    
-    # Creamos la tabla de Terceros
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Terceros (
-            NIT TEXT PRIMARY KEY,
-            Razon_Social TEXT,
-            Direccion TEXT,
-            Ciudad TEXT,
-            Telefono TEXT,
-            Email TEXT
-        )
-    ''')
+        INSERT OR IGNORE INTO Terceros (NIT, Razon_Social, Direccion, Ciudad, Telefono, Email)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (nit, razon, dir, ciu, tel, mail))
     conn.commit()
     conn.close()
-    print("Base de datos y tabla de Terceros creadas con éxito.")
-
-if __name__ == "__main__":
-    inicializar_db()
