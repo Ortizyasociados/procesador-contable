@@ -4,6 +4,19 @@ from lxml import etree
 import streamlit as st
 import os
 import shutil
+import sqlite3
+
+def guardar_tercero(datos):
+    conn = sqlite3.connect("contabilidad.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT OR IGNORE INTO Terceros (NIT, Razon_Social, Direccion, Ciudad, Telefono, Email)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (datos['NIT_Proveedor'], datos['Razon_Social_Proveedor'], 
+          datos['Direccion_Proveedor'], datos['Ciudad_Proveedor'], 
+          datos['Telefono_Proveedor'], datos['Correo_Proveedor']))
+    conn.commit()
+    conn.close()
 
 # --- CONFIGURACIÓN E INTERFAZ ---
 st.title("Procesador de Facturas")
@@ -126,6 +139,7 @@ if uploaded_files:
                                 'Total_Factura': float(invoice_tree.findtext('.//cbc:PayableAmount', namespaces=ns) or 0)
                             }
                             lista_datos.append(datos)
+                            guardar_tercero(datos)
                     except Exception as e:
                         print(f"Error procesando {file}: {e}")
 
