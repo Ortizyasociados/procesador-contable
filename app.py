@@ -62,10 +62,6 @@ with st.sidebar:
         except Exception:
             st.warning("No hay registros en la base de datos.")
 
-# --- CONFIGURACIÓN E INTERFAZ ---
-st.title("Procesador de Facturas")
-uploaded_files = st.file_uploader("Sube tus archivos ZIP", type=["zip"], accept_multiple_files=True)
-
 if uploaded_files:
     lista_datos = []
     ns = {
