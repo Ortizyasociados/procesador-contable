@@ -25,7 +25,7 @@ st.markdown("""
 # DISTRIBUCIÓN
 # Usamos el sidebar nativo de Streamlit para el control, es más limpio
 with st.sidebar:
-    st.markdown('<div style="font-family: sans-serif; font-size: 20px; font-weight: bold; color: white;">ORTIZ Y ASOCIADOS</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-family: \'Georgia\', serif; font-size: 32px; font-weight: bold; color: white;">ORTIZ Y ASOCIADOS</div>', unsafe_allow_html=True)
     st.markdown("---")
     st.write("Panel de Operaciones")
     uploaded_files = st.file_uploader("Cargar ZIP de facturas", type=["zip"])
