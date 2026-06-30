@@ -6,17 +6,28 @@ import os
 import shutil
 import sqlite3
 
+# ANTES de llamar a guardar_tercero, pon esto:
+print(f"DEBUG: Intentando guardar NIT: {datos_extraidos['nit']} - Razon: {datos_extraidos['razon_social']}")
 def guardar_tercero(datos):
+    # Esta línea imprimirá en la terminal exactamente cómo se llaman tus datos
+    print("DEBUG: LOS DATOS RECIBIDOS SON ESTOS:", datos) 
+    
     conn = sqlite3.connect("contabilidad.db")
     cursor = conn.cursor()
-    cursor.execute('''
-        INSERT OR IGNORE INTO Terceros (NIT, Razon_Social, Direccion, Ciudad, Telefono, Email)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (datos['NIT_Proveedor'], datos['Razon_Social_Proveedor'], 
-          datos['Direccion_Proveedor'], datos['Ciudad_Proveedor'], 
-          datos['Telefono_Proveedor'], datos['Correo_Proveedor']))
-    conn.commit()
-    conn.close()
+    
+    # Vamos a usar los nombres genéricos que suelen tener
+    # Si esto falla, el mensaje de error nos dirá qué nombre falta
+    try:
+        cursor.execute('''
+            INSERT OR IGNORE INTO Terceros (NIT, Razon_Social, Direccion, Ciudad, Telefono, Email)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (datos.get('nit'), datos.get('razon_social'), datos.get('direccion'), 
+              datos.get('ciudad'), datos.get('telefono'), datos.get('email')))
+        conn.commit()
+    except Exception as e:
+        print("ERROR AL GUARDAR:", e)
+    finally:
+        conn.close()
 
 # --- CONFIGURACIÓN E INTERFAZ ---
 st.title("Procesador de Facturas")
