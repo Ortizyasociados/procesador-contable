@@ -146,8 +146,10 @@ if uploaded_files:
     df.insert(0, 'No_Item', range(1, 1 + len(df)))
 
     # --- LÓGICA ORIGINAL DE BASE_EXENTA ---
-    df['Base_Exenta'] = df.apply(lambda row: row['Total_Base_Impuestos'] if (pd.isna(row['Total_Base_Impuestos']) or row['Total_Base_Impuestos'] == 0) else 0, axis=1)
-
+   df['Base_Exenta'] = df.apply(
+        lambda row: row['Total_Factura'] if (pd.isna(row['Total_Base_Impuestos']) or row['Total_Base_Impuestos'] == 0) else 0, 
+        axis=1
+    )
     df_columns_order_final = ['No_Item', 'ID_Factura', 'Fecha_Emision', 'Fecha_Vencimiento', 'Tipo_Pago', 'NIT_Proveedor', 'Razon_Social_Proveedor', 'Direccion_Proveedor', 'Telefono_Proveedor', 'Correo_Proveedor', 'Ciudad_Proveedor', 'NIT_Adquirente', 'Razon_Social_Adquirente', 'Moneda', 'Total_Base_Impuestos', 'Base_Exenta', 'Total_Impuestos', 'Otros_Impuestos', 'Total_Factura']
     df = df[df_columns_order_final]
 
