@@ -6,7 +6,7 @@ import shutil
 
 # 1. Subir archivo(s)
 print("Por favor, sube tu archivo(s) .zip:")
-uploaded = files.upload()
+uploaded = file_uploader
 
 lista_datos = []
 ns = {
