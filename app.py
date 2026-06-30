@@ -44,7 +44,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- CABECERA ---
-st.title("📊 Ortiz y Asociados")
+st.title("Ortiz y Asociados")
 st.subheader("Sistema Inteligente de Gestión Contable")
 st.markdown("---")
 
