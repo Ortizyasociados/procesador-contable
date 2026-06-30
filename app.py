@@ -7,15 +7,39 @@ import sqlite3
 import zipfile
 import base_datos # Solo añadí esta línea para conectar con tu archivo base_datos.py
 
-# --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Ortiz y Asociados", layout="wide")
-
-# Estilos CSS modernos y minimalistas
+# --- CONFIGURACIÓN DE ESTILOS DARK MINIMALISTA ---
 st.markdown("""
     <style>
-    .stApp { background-color: #fcfcfc; }
-    h1 { color: #0f172a; font-family: 'Arial', sans-serif; }
-    .stButton>button { border-radius: 8px; border: 1px solid #0f172a; color: #0f172a; font-weight: bold; }
+    /* Fondo oscuro para toda la app */
+    .stApp {
+        background-color: #121212 !important;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    }
+    
+    /* Títulos y textos en blanco o gris muy claro */
+    h1, h2, h3, p, div, label {
+        color: #E0E0E0 !important;
+    }
+    
+    /* Botones: Fondo azul acero y letras blancas */
+    .stButton>button {
+        background-color: #2563eb !important;
+        color: #FFFFFF !important;
+        border-radius: 6px !important;
+        border: none !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Sidebar gris un poco más claro para dar contraste */
+    [data-testid="stSidebar"] {
+        background-color: #1E1E1E !important;
+        border-right: 1px solid #333333;
+    }
+    
+    /* Tabla (Dataframe) con estilo oscuro */
+    .stDataFrame {
+        background-color: #1E1E1E !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
