@@ -9,6 +9,11 @@ import shutil
 print("Por favor, sube tu archivo(s) .zip:")
 uploaded = st.file_uploader("Sube tu archivo ZIP", type=["zip"])
 
+if uploaded is not None:
+    # Creamos un archivo temporal para que tu lógica lo procese
+    with open("uploaded_temp.zip", "wb") as f:
+        f.write(uploaded.getbuffer())
+
 lista_datos = []
 ns = {
     'cbc': 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2',
@@ -259,9 +264,11 @@ df_final = pd.concat([df, total_row], ignore_index=True)
 print("\nLibro de Compras con totales:")
 display(df_final)
 
-# 4. Descargar a Excel
-df_final.to_excel("Libro_Compras_Final.xlsx", index=False)
-files.download("Libro_Compras_Final.xlsx")
+# --- DESCARGA STREAMLIT ---
+    output_file = "Libro_Compras_Final.xlsx"
+    df_final.to_excel(output_file, index=False)
+    with open(output_file, "rb") as f:
+        st.download_button("Descargar Libro de Compras", f, file_name=output_file)
 
 # Generate a Third-Party Database (updated with new columns)
 third_parties_df = pd.DataFrame()
