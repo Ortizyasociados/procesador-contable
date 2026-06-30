@@ -1,12 +1,13 @@
 import zipfile
 import pandas as pd
 from lxml import etree
+import streamlit as st
 import os
 import shutil
 
 # 1. Subir archivo(s)
 print("Por favor, sube tu archivo(s) .zip:")
-uploaded = file_uploader
+uploaded = st.file_uploader("Sube tu archivo ZIP", type=["zip"])
 
 lista_datos = []
 ns = {
