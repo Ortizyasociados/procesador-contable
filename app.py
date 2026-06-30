@@ -265,7 +265,7 @@ print("\nLibro de Compras con totales:")
 display(df_final)
 
 # --- DESCARGA STREAMLIT ---
-    output_file = "Libro_Compras_Final.xlsx"
+output_file = "Libro_Compras_Final.xlsx"
     df_final.to_excel(output_file, index=False)
     with open(output_file, "rb") as f:
         st.download_button("Descargar Libro de Compras", f, file_name=output_file)
