@@ -168,3 +168,14 @@ if uploaded_files:
     df_final.to_excel(output_file, index=False)
     with open(output_file, "rb") as f:
         st.download_button("Descargar Libro de Compras", f, file_name=output_file)
+
+# --- BOTÓN PARA VER TERCEROS GUARDADOS (PARA QUE NO USES LA TERMINAL) ---
+if st.button("Ver Terceros en Base de Datos"):
+    try:
+        conn = sqlite3.connect("contabilidad.db")
+        df_terceros = pd.read_sql_query("SELECT * FROM Terceros", conn)
+        conn.close()
+        st.write("### Terceros guardados:")
+        st.dataframe(df_terceros)
+    except Exception as e:
+        st.error(f"No se pudo leer la base de datos: {e}")
