@@ -21,12 +21,12 @@ def guardar_tercero(datos):
             INSERT OR IGNORE INTO Terceros (NIT, Razon_Social, Direccion, Ciudad, Telefono, Email)
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (
-            datos.get('NIT_Proveedor'), 
-            datos.get('Razon_Social_Proveedor'), 
-            datos.get('Direccion_Proveedor'), 
-            datos.get('Ciudad_Proveedor'), 
-            datos.get('Telefono_Proveedor'), 
-            datos.get('Correo_Proveedor')
+            datos.get('NIT_Proveedor', 'N/A'),
+    datos.get('Razon_Social_Proveedor', 'N/A'),
+    datos.get('Direccion_Proveedor', 'N/A'),
+    datos.get('Ciudad_Proveedor', 'N/A'),
+    datos.get('Telefono_Proveedor', 'N/A'),
+    datos.get('Correo_Proveedor', 'N/A')
         ))
         conn.commit()
     except Exception as e:
