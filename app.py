@@ -37,7 +37,7 @@ with st.sidebar:
         st.session_state.mostrar_terceros = False
 
 # CONTENIDO PRINCIPAL
-st.header("Gestión de Procesamiento")
+st.header("Software inteligente de Procesamiento")
 st.markdown("---")
 
 if st.session_state.get('mostrar_terceros', False):
