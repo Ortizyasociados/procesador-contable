@@ -11,13 +11,22 @@ uploaded_files = st.file_uploader("Sube tus archivos ZIP", type=["zip"], accept_
 
 if uploaded_files:
     lista_datos = []
+    # ... (tus definiciones de ns, etc.) ...
+
     for uploaded_file in uploaded_files:
-        # Esto usa el nombre del archivo subido
-        zip_name = uploaded_file.name 
+        # 1. Definimos el nombre del archivo
+        zip_name = uploaded_file.name
         
-        # Guardamos el archivo temporalmente para procesarlo
+        # 2. Guardamos el archivo en el disco temporalmente
         with open(zip_name, "wb") as f:
             f.write(uploaded_file.getbuffer())
+        
+        # 3. Ahora, como ya existe en el disco, tu lógica original funcionará
+        extracted_path = f"temp_data_{os.path.splitext(zip_name)[0]}"
+        os.makedirs(extracted_path, exist_ok=True)
+
+        with zipfile.ZipFile(zip_name, 'r') as zip_ref:
+            zip_ref.extractall(extracted_path)
     
     # Adaptamos la variable 'uploaded' para que sea un diccionario compatible con tu código
     # Tu código original iteraba sobre uploaded.keys(), por eso lo emulamos:
