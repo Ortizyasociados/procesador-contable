@@ -7,61 +7,53 @@ import sqlite3
 import zipfile
 import base_datos # Solo añadí esta línea para conectar con tu archivo base_datos.py
 
-# --- CONFIGURACIÓN DE ESTILOS DARK MINIMALISTA ---
+# Configuración inicial
+st.set_page_config(page_title="Ortiz y Asociados", layout="wide")
+
+# ESTILO PROFESIONAL (CSS REFINADO)
 st.markdown("""
     <style>
-    /* Fondo oscuro para toda la app */
-    .stApp {
-        background-color: #121212 !important;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
-    }
-    
-    /* Títulos y textos en blanco o gris muy claro */
-    h1, h2, h3, p, div, label {
-        color: #E0E0E0 !important;
-    }
-    
-    /* Botones: Fondo azul acero y letras blancas */
-    .stButton>button {
-        background-color: #2563eb !important;
-        color: #FFFFFF !important;
-        border-radius: 6px !important;
-        border: none !important;
-        font-weight: 600 !important;
-    }
-    
-    /* Sidebar gris un poco más claro para dar contraste */
-    [data-testid="stSidebar"] {
-        background-color: #1E1E1E !important;
-        border-right: 1px solid #333333;
-    }
-    
-    /* Tabla (Dataframe) con estilo oscuro */
-    .stDataFrame {
-        background-color: #1E1E1E !important;
-    }
+    .stApp { background-color: #0f1115; }
+    [data-testid="stSidebar"] { background-color: #171a1f; border-right: 1px solid #2d3139; }
+    h1 { color: #ffffff !important; font-size: 2rem !important; }
+    h3 { color: #8b949e !important; font-weight: 300 !important; }
+    .stButton>button { background-color: #2e5a88 !important; color: white !important; border: none !important; width: 100%; border-radius: 4px; }
+    .stButton>button:hover { background-color: #3b74b0 !important; }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# --- CABECERA ---
-st.title("Ortiz y Asociados")
-st.subheader("Sistema Inteligente de Gestión Contable")
+# DISTRIBUCIÓN
+# Usamos el sidebar nativo de Streamlit para el control, es más limpio
+with st.sidebar:
+    st.markdown("<h1>ORTIZ</h1><h3>Y ASOCIADOS</h3>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.write("Panel de Operaciones")
+    uploaded_files = st.file_uploader("Cargar ZIP de facturas", type=["zip"])
+    
+    # EL BOTÓN DE TERCEROS BIEN POSICIONADO
+    if st.button("Ver Terceros Registrados"):
+        st.session_state.mostrar_terceros = True
+    else:
+        st.session_state.mostrar_terceros = False
+
+# CONTENIDO PRINCIPAL
+st.header("Gestión de Procesamiento")
 st.markdown("---")
 
-# --- SIDEBAR (INTERFAZ INTELIGENTE) ---
-with st.sidebar:
-    st.header("Operaciones")
-    uploaded_files = st.file_uploader("Sube archivos ZIP de facturas", type=["zip"], accept_multiple_files=True)
-    st.markdown("---")
-    if st.button("Ver Terceros Registrados"):
-        try:
-            conn = sqlite3.connect("contabilidad.db")
-            df_terceros = pd.read_sql_query("SELECT * FROM Terceros", conn)
-            conn.close()
-            st.dataframe(df_terceros)
-        except Exception:
-            st.warning("No hay registros en la base de datos.")
+if st.session_state.get('mostrar_terceros', False):
+    st.subheader("Base de Datos: Terceros")
+    try:
+        conn = sqlite3.connect("contabilidad.db")
+        df_terceros = pd.read_sql_query("SELECT * FROM Terceros", conn)
+        conn.close()
+        st.dataframe(df_terceros, use_container_width=True)
+    except:
+        st.error("No se encontraron registros.")
+else:
+    st.info("Utiliza el panel lateral para cargar archivos o visualizar los terceros registrados.")
 
+# Ocultar elementos de Streamlit
+st.markdown("<style>#MainMenu {visibility: hidden;} footer {visibility: hidden;}</style>", unsafe_allow_html=True)
 if uploaded_files:
     lista_datos = []
     ns = {
