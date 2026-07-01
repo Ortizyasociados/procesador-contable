@@ -1,9 +1,19 @@
 import pandas as pd
+import os
 from base_datos import guardar_cuenta_puc
 
 def ejecutar_carga():
-    # Leer el archivo con los encabezados exactos detectados
-    df = pd.read_csv('Plan_De_Cuentas_Actualizado.csv')
+    # Obtener la ruta donde está guardado este archivo script
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    archivo_csv = os.path.join(base_dir, 'Plan_De_Cuentas_Actualizado.csv')
+    
+    # Verificar si el archivo existe
+    if not os.path.exists(archivo_csv):
+        print(f"Error: No se encontró el archivo en: {archivo_csv}")
+        return
+
+    # Leer el archivo usando la ruta completa
+    df = pd.read_csv(archivo_csv)
     
     print(f"Iniciando carga de {len(df)} cuentas...")
     
