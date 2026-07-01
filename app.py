@@ -36,7 +36,7 @@ if opcion == "Bienvenida":
 
 elif opcion == "Subir Factura":
     st.title("Procesar Facturas")
-    uploaded_files = st.file_uploader("Cargar ZIP de facturas", type=["zip"])
+    uploaded_files = uploaded_files = st.file_uploader("Cargar ZIP de facturas", type=["zip"], accept_multiple_files=True)
     
     if uploaded_files:
         lista_datos = []
