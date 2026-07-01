@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import numpy as np
 from base_datos import guardar_cuenta_puc
 
 def ejecutar_carga():
@@ -13,25 +14,30 @@ def ejecutar_carga():
     # Leer archivo
     df = pd.read_csv(archivo_csv)
     
-    # Esto imprimirá las columnas reales para que salgamos de dudas si vuelve a fallar
-    print(f"Columnas detectadas en el archivo: {list(df.columns)}")
+    # Limpiamos los datos: convertimos valores nulos (NaN) a 0 o texto vacío
+    df = df.replace({np.nan: None})
     
     print(f"Iniciando carga de {len(df)} cuentas...")
     
     for _, fila in df.iterrows():
-        # Usamos .get() para evitar errores si el nombre no es exacto
-        # Si esto falla, el error nos dirá exactamente cuál columna falta
-        datos = {
-            'codigo': fila[df.columns[0]], # Primera columna
-            'nombre': fila[df.columns[1]], # Segunda columna
-            'nivel': int(fila[df.columns[2]]),
-            'padre': str(fila[df.columns[3]]),
-            'naturaleza': fila[df.columns[4]],
-            'es_movimiento': bool(fila[df.columns[5]])
-        }
-        guardar_cuenta_puc(datos)
+        try:
+            # Aseguramos tipos de datos: si Nivel es None, ponemos 0
+            nivel = int(fila[df.columns[2]]) if fila[df.columns[2]] is not None else 0
+            
+            datos = {
+                'codigo': str(fila[df.columns[0]]),
+                'nombre': str(fila[df.columns[1]]),
+                'nivel': nivel,
+                'padre': str(fila[df.columns[3]]) if fila[df.columns[3]] is not None else "",
+                'naturaleza': str(fila[df.columns[4]]) if fila[df.columns[4]] is not None else "",
+                'es_movimiento': bool(fila[df.columns[5]])
+            }
+            guardar_cuenta_puc(datos)
+        except Exception as e:
+            print(f"Error en fila {fila[0]}: {e}")
+            continue
         
-    print("¡Proceso completado con éxito!")
+    print("¡Proceso completado con éxito! El PUC ha sido cargado en la base de datos.")
 
 if __name__ == "__main__":
     ejecutar_carga()
