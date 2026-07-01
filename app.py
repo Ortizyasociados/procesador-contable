@@ -108,6 +108,7 @@ elif opcion == "Subir Factura":
                                 }
                                 lista_datos.append(datos)
                                 base_datos.guardar_tercero(datos)
+                                base_datos.guardar_factura_en_libro(datos)
                         except Exception as e:
                             print(f"Error procesando {file}: {e}")
             if os.path.exists(extracted_path): shutil.rmtree(extracted_path)
