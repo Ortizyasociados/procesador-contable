@@ -1,43 +1,46 @@
 import pandas as pd
-import os
-import numpy as np
-from base_datos import guardar_cuenta_puc
+from base_datos import guardar_cuenta_puc, inicializar_base_datos
 
 def ejecutar_carga():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    archivo_csv = os.path.join(base_dir, 'Plan_de_Cuentas_Actualizado.csv')
+    # --- LA PIEZA CLAVE ---
+    # Esto construye las tablas vacías en el archivo nuevo antes de inyectar datos
+    inicializar_base_datos()
+    # ----------------------
     
-    if not os.path.exists(archivo_csv):
-        print(f"Error: No se encontró el archivo: {archivo_csv}")
-        return
-
-    # Leer archivo
-    df = pd.read_csv(archivo_csv)
+    archivo_csv = 'Plan_de_Cuentas_Actualizado.csv'
     
-    # Limpiamos los datos: convertimos valores nulos (NaN) a 0 o texto vacío
-    df = df.replace({np.nan: None})
+    # Lectura corregida con manejo de comas y alineación perfecta
+    df = pd.read_csv(
+        archivo_csv, 
+        encoding='latin-1', 
+        dtype={'CODIGO': str, 'NOMBRE CUENTA': str, 'NATURALEZA': str, 'ACUMULA': str},
+        on_bad_lines='skip'
+    )
     
     print(f"Iniciando carga de {len(df)} cuentas...")
     
     for _, fila in df.iterrows():
-        try:
-            # Aseguramos tipos de datos: si Nivel es None, ponemos 0
-            nivel = int(fila[df.columns[2]]) if fila[df.columns[2]] is not None else 0
-            
-            datos = {
-                'codigo': str(fila[df.columns[0]]),
-                'nombre': str(fila[df.columns[1]]),
-                'nivel': nivel,
-                'padre': str(fila[df.columns[3]]) if fila[df.columns[3]] is not None else "",
-                'naturaleza': str(fila[df.columns[4]]) if fila[df.columns[4]] is not None else "",
-                'es_movimiento': bool(fila[df.columns[5]])
-            }
-            guardar_cuenta_puc(datos)
-        except Exception as e:
-            print(f"Error en fila {fila[0]}: {e}")
-            continue
+        # Limpieza estricta del código
+        codigo_original = str(fila['CODIGO']).strip()
+        codigo_limpio = codigo_original.split('.')[0]
         
-    print("¡Proceso completado con éxito! El PUC ha sido cargado en la base de datos.")
+        # Validación de la lógica de movimiento (SI acumula = NO es cuenta operativa)
+        acumula_valor = str(fila['ACUMULA']).strip().upper()
+        es_movimiento_real = False if acumula_valor == 'SI' else True
+        
+        datos = {
+            'codigo': codigo_limpio,
+            'nombre': str(fila['NOMBRE CUENTA']).strip(),
+            'nivel': 1, 
+            'padre': None,
+            'naturaleza': str(fila['NATURALEZA']).strip(),
+            'es_movimiento': es_movimiento_real
+        }
+        guardar_cuenta_puc(datos)
+        
+    print("¡Proceso completado con éxito! Las cuentas han sido cargadas.")
 
 if __name__ == "__main__":
     ejecutar_carga()
+    
+
